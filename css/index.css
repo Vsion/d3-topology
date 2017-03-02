@@ -1,0 +1,96 @@
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+html, body{
+  height: 100%;
+  width: 100%;
+  min-height: 1000px;
+}
+
+body{
+  padding: 20px;
+}
+.container{
+  height: 100%;
+  border: 1px solid gray;
+  border-radius: 5px;
+  position: relative;
+  /*margin: 20px;*/
+}
+.topology{
+  height: 100%;
+}
+.link { stroke: green; stroke-linejoin:bevel;}
+
+.link_error{
+    stroke:red;
+    stroke-linejoin:bevel;
+}
+
+.nodetext {
+    font: 12px sans-serif;
+    -webkit-user-select:none;
+    -moze-user-select:none;
+    stroke-linejoin:bevel;
+}
+
+.testLineClass{
+  stroke: yellow;
+}
+
+line {
+    stroke-width: 2;
+    stroke: steelblue;
+    fill: none;
+    stroke-dasharray:900,900;
+    stroke-dashoffset:900;
+    -webkit-animation: 'draw' 25s linear alternate;
+}
+
+@-webkit-keyframes draw {
+    from {
+        stroke-dashoffset: 900;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+.container .c-top,
+.container .c-right,
+.container .c-bottom,
+.container .c-left{
+  position: absolute;
+  border-radius: 50%;
+}
+.container .c-top:hover,
+.container .c-right:hover,
+.container .c-bottom:hover,
+.container .c-left:hover{
+  background-color: #ccc;
+}
+
+.container .c-right,
+.container .c-left{
+  height: calc(100% - 10px);
+  width: 5px;
+  background: white;
+  cursor: ew-resize;
+  margin: 5px 0;
+}
+
+.container .c-top,
+.container .c-bottom{
+  height: 5px;
+  width: calc(100% - 10px);
+  background: white;
+  cursor: ns-resize;
+  margin: 0 5px;
+}
+.container .c-right{
+  right: 0;
+}
+.container .c-bottom{
+  bottom: 0;
+}

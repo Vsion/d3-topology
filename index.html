@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>d3测试页面</title>
+    <link rel="stylesheet" href="css/index.css">
+    <!-- <script src="js/d3.js"></script> -->
+    <script src="js/d3.v2.js"></script>
+    <script src="js/index.js"></script>
+  </head>
+  <body>
+
+    <div class="container">
+    </div>
+    <script>
+      var nodes=[
+        { id: '1', status: 0, imgUrl: './img/1.jpg', name: 'name:1'},
+        { id: '2', expand: true, status: 1, imgUrl: './img/2.jpg', name: 'name:2'},
+        { id: '3_0', status: 0, imgUrl: './img/3.jpg', name: 'name:3_0'},
+        { id: '3_1', status: 1, imgUrl: './img/3.jpg', name: 'name:3_1'},
+        { id: '3_2', status: 0, imgUrl: './img/3.jpg', name: 'name:3_2'},
+        { id: '4', status: 1, imgUrl: './img/4.jpg', name: 'name:4'}
+      ];
+
+      var childNodes=[
+        { id:'2-0', status:1, imgUrl: './img/1.jpg', name: 'name2-0'},
+        { id:'2-1', status:1, imgUrl: './img/1.jpg', name: 'name2-1'}
+      ];
+
+      var links=[
+        { source:'1', target:'2', className: 'testLineClass'},
+        { source:'3_0', target:'4'},
+        { source:'3_1', target:'4'},
+        { source:'3_2', target:'4'},
+        { source:'2', target:'4'},
+        { source:'1', target:'3_0'}
+      ];
+
+      var childLinks=[
+        { source:'2',target:'2-0'},
+        { source:'2',target:'2-1'},
+      ]
+
+      var opt = {
+        dom: 'container',
+        nodes: nodes,
+        childNodes: childNodes,
+        links: links,
+        childLinks: childLinks,
+        nodeClickFn: function(node){
+          console.log(node);
+        },
+      }
+      var topology=new Topology(opt);
+    </script>
+  </body>
+</html>
