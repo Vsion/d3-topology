@@ -7,6 +7,8 @@
     <!-- <script src="js/d3.js"></script> -->
     <script src="js/d3.v2.js"></script>
     <script src="js/index.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/lodash.js"></script>
   </head>
   <body>
 
@@ -23,8 +25,10 @@
       ];
 
       var childNodes=[
-        { id:'2-0', status:1, imgUrl: './img/1.jpg', name: 'name2-0'},
-        { id:'2-1', status:1, imgUrl: './img/1.jpg', name: 'name2-1'}
+        { id:'2-0', expand: true, status:1, imgUrl: './img/1.jpg', name: 'name2-0'},
+        { id:'2-1', status:1, imgUrl: './img/1.jpg', name: 'name2-1'},
+        { id:'2-0-1', status:1, imgUrl: './img/1.jpg', name: 'name2-0-1'},
+        { id:'3_0-0', status:1, imgUrl: './img/1.jpg', name: 'name3_0-0'},
       ];
 
       var links=[
@@ -39,6 +43,8 @@
       var childLinks=[
         { source:'2',target:'2-0'},
         { source:'2',target:'2-1'},
+        { source:'3_0',target:'3_0-0'},
+        { source:'2-0',target:'2-0-1'},
       ]
 
       var opt = {
@@ -47,6 +53,7 @@
         childNodes: childNodes,
         links: links,
         childLinks: childLinks,
+        isShowNodeDetails: true,
         nodeClickFn: function(node){
           console.log(node);
         },

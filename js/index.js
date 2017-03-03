@@ -1,8 +1,9 @@
 function Topology(opt){
   var self=this;
-  var content = '<div class="c-top"></div><div class="c-right"></div><div class="c-bottom"></div><div class="c-left"></div><div class="topology"></div>';
+  var content = '<div class="c-top"></div><div class="c-right"></div><div class="c-bottom"></div><div class="c-left"></div>'
+    + '<div id="getMoreDiv"><span>查看详细</span></div><div class="topology"></div>';
   if(typeof(opt.dom)=='string'){
-    var container = document.querySelector("." + opt.dom);
+    var container = document.querySelector("." + opt.dom) || document.querySelector("#" + opt.dom) ;
     container.innerHTML = content;
     self.container = container.querySelector(".topology");
   };
@@ -10,6 +11,10 @@ function Topology(opt){
     w=container.clientWidth,
     h=container.clientHeight;
   self.opt = opt;
+  self.childNodesIds = [];
+  opt.childNodes.forEach(function(cn){
+    self.childNodesIds.push(cn.id);
+  })
   self.force = d3.layout.force().gravity(.05).distance(200).charge(-800).size([w, h]);
   self.nodes = self.force.nodes();
   self.links = self.force.links();
@@ -33,6 +38,7 @@ function Topology(opt){
     _this.addLinks(_opt.links);
     _this.update();
   })(self, opt);
+  bindDefaultEvent(self);
 }
 
 Topology.prototype.resize=function(){
@@ -173,8 +179,23 @@ Topology.prototype.findNodeIndex=function(id){
 }
 
 Topology.prototype.expandNode = function (id){
-  this.addNodes(this.opt.childNodes);
-  this.addLinks(this.opt.childLinks);
+  var nodesId = [];
+  this.opt.childLinks.forEach(function(l, i, ls){
+    if(!!!l.className && l.className != "childLineClass"){
+      l.className = "childLineClass";
+    }
+    if(l.source == id){
+      nodesId.push(l.target);
+    }
+  })
+  var nodes = _.filter(this.opt.childNodes, function(n) {
+    return nodesId.indexOf(n.id) > -1;
+  })
+  var links = _.filter(this.opt.childLinks, function(l) {
+    return l.source == id;
+  })
+  this.addNodes(nodes);
+  this.addLinks(links);
   this.update();
 }
 
@@ -182,22 +203,43 @@ Topology.prototype.collapseNode = function (id){
   this.removeChildNodes(id);
   this.update();
 }
+Topology.prototype.nodeClickFn = function(d){
+  var self = this;
+  self.clickFn(d);
+  if(d._expanded){
+    var d_links = _.filter(self.links, function(l){
+      return l.source.id == d.id && self.childNodesIds.indexOf(l.target.id) > -1})
+    d_links.forEach(function(d_l){
+      if(!!d_l.target._expanded){
+        d_l.target._expanded = false;
+      }
+    })
+  }
+  d.expand && (function(node, _this){
+    if(!node['_expanded']){
+      _this.expandNode(node.id);
+      node['_expanded']=true;
+    }else{
+      _this.collapseNode(node.id);
+      node['_expanded']=false;
+    }
+  })(d, self);
+}
 //更新拓扑图状态信息
 Topology.prototype.update=function(){
   var link = this.vis.selectAll("line.link")
       .data(this.links, function(d) { return d.source.id + "-" + d.target.id; })
-    .attr("class", function(d){
-      return d["className"] ? 'link ' + d["className"] : d['source']['status'] && d['target']['status'] ? 'link' :'link link_error';
-    });
 
-  link.enter().insert("svg:line", "g.node")
+  link.enter()
+      .insert("svg:line", "g.node")
       .attr("class", function(d){
-     return d["className"] ? 'link ' + d["className"] : d['source']['status'] && d['target']['status'] ? 'link' :'link link_error';
-    }) .transition()
-         .duration(4000)
-         .styleTween("stroke-dashoffset", function() {
-             return d3.interpolateNumber(1000, 0);
-         });;
+          return d["className"] ? 'link ' + d["className"] : d['source']['status'] && d['target']['status'] ? 'link' :'link link_error';
+        })
+      .transition()
+      .duration(5000)
+      .styleTween("stroke-dashoffset", function() {
+            return d3.interpolateNumber(1000, 0);
+        });;
 
   link.exit().remove();
 
@@ -213,33 +255,106 @@ Topology.prototype.update=function(){
   nodeEnter.append("svg:image")
       .attr("class", "circle")
       .attr("xlink:href", function(d){
-     //根据类型来使用图片
-     return d.imgUrl;
-    })
+          //根据类型来使用图片
+          return d.imgUrl;
+        })
       .attr("x", "-32px")
       .attr("y", "-32px")
       .attr("width", "64px")
       .attr("height", "64px")
     .on('click',function(d){
-      self.clickFn(d);
-      d.expand && (function(node, _this){
-        if(!node['_expanded']){
-          _this.expandNode(node.id);
-          node['_expanded']=true;
-        }else{
-          _this.collapseNode(node.id);
-          node['_expanded']=false;
-        }
-      })(d, self);
+      self.nodeClickFn(d);
     })
 
   nodeEnter.append("svg:text")
       .attr("class", "nodetext")
       .attr("dx", 15)
       .attr("dy", -35)
-      .text(function(d) { return d.name });
+      .text(function(d) { return d.name })
+      .on('mouseenter',function(d){
+        $(this).siblings(".hintimg").show()
+      })
+      .on('mouseleave',function(d){
+        var $this = $(this);
+        setTimeout(function(){
+          $this.siblings(".hintimg").hide()
+        },1000);
+      });
+
+  // nodeEnter.append("svg:div")
+  //     .attr("width", "64px")
+  //     .attr("display", "block")
+  //     .attr("position", "absolute")
+  //     .attr("top", "0px")
+  //     .attr("style", "display: block; height: 64px; width: 64px;")
+  //     .attr("height", "64px").text("123")
+  var interval = null;
+  nodeEnter.append("svg:image")
+      .attr("class", "circle hintimg")
+      .attr("xlink:href", "./img/hintimg.png")
+      .attr("x", "-32px")
+      .attr("y", "-32px")
+      .attr("width", "64px")
+      .attr("width", "64px")
+      .attr("height", "64px")
+      .attr("style", "display: none; opacity: 0.5; cursor: pointer")
+      .on('click',function(d){
+        console.log(d);
+      })
+      .on('mouseenter',function(d){
+        var $this = $(this);
+        interval = setInterval(function(){
+           $this.show();
+        },1);
+      })
+      .on('mouseleave',function(d){
+        clearInterval(interval);
+        $(this).hide();
+      });
+
+  // self.currEle = null;
+  // var doms = nodeEnter[0], interval = null;
+  // doms.forEach(function(d, i, doms){
+  //   if(!!!d)return;
+  //   var ele = d.getElementsByTagName("text")[0];
+  //   ele.onmouseenter = function(e){
+  //     self.currEle = d;
+  //     var getMoreDiv = document.getElementById('getMoreDiv');
+  //     interval = setGetMoreDivPosi(d, interval);
+  //   }
+  //   ele.onmouseleave = function(e){
+  //     var getMoreDiv = document.getElementById('getMoreDiv');
+  //     getMoreDiv.style.display = "none";
+  //     clearInterval(interval);
+  //   }
+  // });
 
   node.exit().remove();
 
   this.force.start();
+}
+// function setGetMoreDivPosi(d, interval){
+//   var posi = d.attributes[1].value;//"translate(622.4659587638454,544.701283066796)"
+//   posi = posi.replace("translate(", "").replace(")", "").split(",");
+//   console.log(posi.toString());
+//   interval = setInterval(function(){
+//     getMoreDiv.style.display = "block";
+//     getMoreDiv.style.left = (posi[0] - 32) + "px";
+//     getMoreDiv.style.top = (posi[1] - 32) + "px";
+//   }, 100);
+//   return interval;
+// }
+
+function bindDefaultEvent(self){
+  // var mainDiv = document.querySelector("." + self.opt.dom) || document.querySelector("#" + self.opt.dom) ;
+  // var getMoreDiv = mainDiv.querySelector("#getMoreDiv");
+  // var interval = null;
+  // getMoreDiv.onmouseenter = function(){
+  //   this.style.display = "block";
+  //   interval = setGetMoreDivPosi(self.currEle, interval);
+  // }
+  // getMoreDiv.onmouseleave = function(){
+  //   this.style.display = "none";
+  //   clearInterval(interval);
+  // }
 }
