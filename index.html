@@ -3,25 +3,27 @@
   <head>
     <meta charset="UTF-8">
     <title>d3测试页面</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="src/css/index.css">
     <!-- <script src="js/d3.js"></script> -->
-    <script src="js/d3.v2.js"></script>
-    <script src="js/index.js"></script>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/lodash.js"></script>
+    <!-- <script src="js/d3.js"></script> -->
+    <script src="src/js/jquery.min.js"></script>
+    <script src="src/js/d3.v2.js"></script>
+    <script src="src/js/dialog/dialog.js"></script>
+    <script src="src/js/dialog/layer.js"></script>
+    <script src="src/js/lodash/lodash.js"></script>
+    <script src="src/js/index.js"></script>
   </head>
   <body>
-
     <div class="container">
     </div>
     <script>
       var nodes=[
-        { id: '1', status: 0, imgUrl: './img/1.jpg', name: 'name:1'},
-        { id: '2', expand: true, status: 1, imgUrl: './img/2.jpg', name: 'name:2'},
-        { id: '3_0', status: 0, imgUrl: './img/3.jpg', name: 'name:3_0'},
-        { id: '3_1', status: 1, imgUrl: './img/3.jpg', name: 'name:3_1'},
-        { id: '3_2', status: 0, imgUrl: './img/3.jpg', name: 'name:3_2'},
-        { id: '4', status: 1, imgUrl: './img/4.jpg', name: 'name:4'}
+        { id: '1', status: 0, imgUrl: './img/1.jpg', name: 'name:1', operOpt: ["ditails"]},
+        { id: '2', expand: true, status: 1, imgUrl: './img/2.jpg', name: 'name:2', operOpt: ["childNodes", "ditails"]},
+        { id: '3_0', status: 0, imgUrl: './img/3.jpg', name: 'name:3_0', operOpt: ["ditails"]},
+        { id: '3_1', status: 1, imgUrl: './img/3.jpg', name: 'name:3_1', operOpt: ["ditails"]},
+        { id: '3_2', status: 0, imgUrl: './img/3.jpg', name: 'name:3_2', operOpt: ["ditails"]},
+        { id: '4', status: 1, imgUrl: './img/4.jpg', name: 'name:4', operOpt: ["ditails"]}
       ];
 
       var childNodes=[

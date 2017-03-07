@@ -22,11 +22,9 @@ body{
 .topology{
   height: 100%;
 }
-.link { stroke: green; stroke-linejoin:bevel;}
 
 .link_error{
-    stroke:red;
-    stroke-linejoin:bevel;
+    stroke:red !important;
 }
 
 .nodetext, #getMoreDiv {
@@ -48,20 +46,21 @@ body{
   cursor: pointer;
 }
 
-.testLineClass{
+.operLineClass{
   stroke: yellow;
 }
 .childLineClass{
   stroke: black;
 }
-line {
-    stroke-width: 2;
-    stroke: steelblue;
-    fill: none;
-    stroke-dasharray:900,900;
-    stroke-dashoffset:900;
-    -webkit-animation: 'draw' 2.5s linear infinite;
-    animation: 'draw' 2.5s linear infinite;
+.link {
+  stroke-width: 2;
+  stroke: steelblue;
+  fill: none;
+  stroke-dasharray:900,900;
+  stroke-dashoffset:900;
+  -webkit-animation: 'draw' 2.5s linear infinite;
+  animation: 'draw' 2.5s linear infinite;
+  stroke-linejoin:bevel;
 }
 
 @-webkit-keyframes draw {
@@ -72,40 +71,65 @@ line {
         stroke-dashoffset: 600;
     }
 }
-.container .c-top,
-.container .c-right,
-.container .c-bottom,
-.container .c-left{
-  position: absolute;
-  border-radius: 50%;
-}
-.container .c-top:hover,
-.container .c-right:hover,
-.container .c-bottom:hover,
-.container .c-left:hover{
-  background-color: #ccc;
-}
-
-.container .c-right,
-.container .c-left{
+.c_right,
+.c_left{
   height: calc(100% - 10px);
   width: 5px;
   background: white;
   cursor: ew-resize;
-  margin: 5px 0;
+  /*margin: 5px 0;*/
+  top: 5px;
 }
 
-.container .c-top,
-.container .c-bottom{
+.c_top,
+.c_bottom{
   height: 5px;
   width: calc(100% - 10px);
   background: white;
   cursor: ns-resize;
-  margin: 0 5px;
+  /*margin: 0 5px;*/
+  left:5px;
 }
-.container .c-right{
+.c_right{
   right: 0;
 }
-.container .c-bottom{
+.c_bottom{
   bottom: 0;
+}
+.c_top_left,
+.c_top_right,
+.c_bottom_left,
+.c_bottom_right{
+  width: 5px;
+  height: 5px;
+}
+
+.c_top_left, .c_bottom_right{
+  cursor: nw-resize;
+}
+.c_bottom_left, .c_top_right{
+  cursor: sw-resize;
+}
+.c_top_left{
+  top: 0;
+  left: 0;
+}
+.c_top_right{
+  top: 0;
+  right: 0;
+}
+.c_bottom_left{
+  bottom: 0;
+  left: 0;
+}
+.c_bottom_right{
+  bottom: 0;
+  right: 0;
+}
+.c_drag{
+  position: absolute;
+  border-radius: 50%;
+}
+.c_drag:hover{
+  background-color: #ccc;
 }
