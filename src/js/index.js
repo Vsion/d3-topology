@@ -12,6 +12,7 @@ function Topology(opt){
     h=container.clientHeight;
   self.distance = 200;
   self.opt = opt;
+  self.currNode = null;
   self.childNodesIds = [];
   opt.childNodes.forEach(function(cn){
     self.childNodesIds.push(cn.id);
@@ -33,12 +34,34 @@ function Topology(opt){
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
   });
-
+  self.setDefaultNodes();
   (function(_this, _opt){
     _this.addNodes(_opt.nodes);
     _this.addLinks(_opt.links);
     _this.update();
   })(self, opt);
+}
+
+Topology.prototype.setDefaultNodes = function(){
+  var nodes = this.opt.nodes;
+  var childNodes = this.opt.childNodes;
+  var childLinks = this.opt.childLinks;
+  var nodesIds = [];
+  childLinks.forEach(function(l, i, ls){
+    nodesIds.push(l.source);
+  })
+  nodes.forEach(function(n, i, ns){
+    n.operOpt = ["details"];
+    if(nodesIds.indexOf(n.id) > -1){
+      n.operOpt.push("childNodes");
+    };
+  });
+  childNodes.forEach(function(c, i, cs){
+    c.operOpt = ["details"];
+    if(nodesIds.indexOf(c.id) > -1){
+      c.operOpt.push("childNodes");
+    };
+  })
 }
 
 Topology.prototype.resize=function(){
@@ -159,6 +182,7 @@ Topology.prototype.removeChildNodes=function(id){
 Topology.prototype.removeOperNodes=function(node, id){
   //重置是否显示操作项
   node.isShowOper = false;
+  var id = node.id;
   var nodes=this.nodes;
   links=this.links,
   self=this,
@@ -170,23 +194,12 @@ Topology.prototype.removeOperNodes=function(node, id){
       links.splice(i--,1);
     }
   }
-  // links.forEach(function(l,i,links){
-  //   if(l.isOperLink && l.source.id == id){
-  //     links.splice(i,1);
-  //     todelids.push(l.target.id);
-  //   }
-  // });
   for (var i = 0; i < nodes.length; i++) {
     var n = nodes[i];
     if(todelids.indexOf(n.id) > -1){
       nodes.splice(i--,1);
     }
   }
-  // nodes.forEach(function(n,i,ns){
-  //   if(todelids.indexOf(n.id) > -1){
-  //     ns.splice(i,1);
-  //   }
-  // })
   self.update();
 }
 
@@ -214,7 +227,7 @@ Topology.prototype.findNodeIndex=function(id){
 Topology.prototype.getChildrenNodes = function(d){
   var self = this;
   //添加子节点时先去除操作节点
-  self.removeOperNodes(d, d.id);
+  self.removeOperNodes(d);
   if(d._expanded){
     var d_links = _.filter(self.links, function(l){
       return l.source.id == d.id && self.childNodesIds.indexOf(l.target.id) > -1})
@@ -224,7 +237,7 @@ Topology.prototype.getChildrenNodes = function(d){
       }
     })
   }
-  d.expand && (function(node, _this){
+  (function(node, _this){
     if(!node['_expanded']){
       _this.expandNode(node.id);
       node['_expanded']=true;
@@ -237,11 +250,15 @@ Topology.prototype.getChildrenNodes = function(d){
 //更新拓扑图状态信息
 Topology.prototype.addOperNode = function(d){
   var self = this;
+  if(!!self.currNode && self.currNode !== d){
+      self.removeOperNodes(self.currNode);
+  }
+  self.currNode = d;
   var oper = d.operOpt, nodes = [], links = [];
   if(!!!d.isShowOper){
-    if(oper.length > 0){
+    if(!!oper && oper.length > 0){
       oper.forEach(function(o, i, objs){
-        if(o == "ditails"){
+        if(o == "details"){
           nodes.push({id: d.id + "_" + o, name: '查看详细', isOper: true});
         }
         if(o == "childNodes"){
@@ -256,7 +273,7 @@ Topology.prototype.addOperNode = function(d){
       d.isShowOper = true;
     }
   }else{
-    self.removeOperNodes(d, d.id);
+    self.removeOperNodes(d);
   }
 }
 //更新拓扑图状态信息
@@ -279,7 +296,8 @@ Topology.prototype.update=function(){
         .text(function(d) { return d.name })
         .on("click", function(d){
           if(d.name == "查看详细"){
-            dialog(self.getParentNode(d));
+            self.showDetailDialog(self.getParentNode(d));
+
           }
           if(d.name == "子节点"){
             self.getChildrenNodes(self.getParentNode(d));
@@ -297,44 +315,16 @@ Topology.prototype.update=function(){
         .attr("y", "-32px")
         .attr("width", "64px")
         .attr("height", "64px")
-        // .on('click',function(d){
-        //   self.nodeClickFn(d);
-        // })
         .on('click',function(d){
           console.log(d);
           self.addOperNode(d);
         })
-        // .on('mouseenter', function(){
-        //   $(this).siblings('image').show();
-        // })
 
     nodeG.append("svg:text")
         .attr("class", "nodetext")
         .attr("dx", 15)
         .attr("dy", -35)
         .text(function(d) { return d.name });
-
-
-    // nodeG.append("svg:image")
-    //     .attr("class", "circle hintimg")
-    //     .attr("xlink:href", "./img/hintimg.png")
-    //     .attr("x", "-32px")
-    //     .attr("y", "-32px")
-    //     .attr("width", "64px")
-    //     .attr("width", "64px")
-    //     .attr("height", "64px")
-    //     .attr("style", "display: none; opacity: 0.5; cursor: pointer")
-    //     .on('click',function(d){
-    //       console.log(d);
-    //       self.addOperNode(d);
-    //       //dialog(d, function(){});
-    //     })
-    //     .on('mouseenter', function(){
-    //       $(this).show();
-    //     })
-    //     .on('mouseleave', function(){
-    //       $(this).hide();
-    //     });
   }
   var link = self.vis.selectAll("line.link")
       .data(self.links, function(d) { return d.source.id + "-" + d.target.id; })
@@ -404,7 +394,8 @@ Topology.prototype.collapseNode = function (id){
   this.update();
 }
 
-function dialog(d, callback){
+Topology.prototype.showDetailDialog = function(d, callback){
+  this.removeOperNodes(d)
   $.dialog.basicsDialog({//调用基本弹窗方法
       area: ['350', 'auto'],
       content: d.name,

@@ -48,6 +48,7 @@ body{
 
 .operLineClass{
   stroke: yellow;
+  animation: none !important;
 }
 .childLineClass{
   stroke: black;
