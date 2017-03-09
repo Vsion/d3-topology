@@ -3,7 +3,7 @@ function Topology(opt){
   var content = '<div class="c_drag c_top"></div><div class="c_drag c_top_right"></div><div class="c_drag c_right"></div><div class="c_drag c_bottom_right"></div><div class="c_drag c_bottom"></div><div class="c_drag c_bottom_left"></div><div class="c_drag c_left"></div><div class="c_drag c_top_left"></div>'
     + '<div id="getMoreDiv"><span>查看详细</span></div><div class="topology"></div>';
   if(typeof(opt.dom)=='string'){
-    var container = document.querySelector("." + opt.dom) || document.querySelector("#" + opt.dom) ;
+    var container = document.querySelector(opt.dom);
     container.innerHTML = content;
     self.container = container.querySelector(".topology");
   };
@@ -75,7 +75,12 @@ Topology.prototype.resize=function(){
 }
 
 Topology.prototype.doZoom=function(){
-  d3.select(this).select('g').attr("transform","translate(" + d3.event.translate + ")"+ " scale(" + d3.event.scale + ")");
+  var str = $(this).attr("transform");
+  arrTransl = str.replace("translate(", "").replace(")", "").split(",");
+  var diff = d3.event.translate;
+  var x = parseFloat(arrTransl[0]) + diff[0];
+  var y = parseFloat(arrTransl[1]) + diff[1];
+  $(this).parent().find("g").find("image").attr("transform", "scale(" + d3.event.scale + "," + d3.event.scale + ")");
 }
 
 //增加节点
@@ -279,13 +284,18 @@ Topology.prototype.addOperNode = function(d){
 //更新拓扑图状态信息
 Topology.prototype.update=function(){
   var self=this;
+  var zoom = d3.behavior.zoom()
+            .scaleExtent([1,10])//用于设置最小和最大的缩放比例
+            .on("zoom",self.doZoom);
+
   var node = self.vis.selectAll("g.node")
       .data(self.nodes, function(d) { return d.id;});
 
   var nodeEnter = node.enter();
   var nodeG = nodeEnter.append("svg:g")
       .attr("class", "node")
-      .call(self.force.drag);
+      .call(self.force.drag)
+      .call(zoom);
   //操作节点
   if(!!nodeEnter[0][nodeEnter[0].length - 1] && nodeEnter[0][nodeEnter[0].length - 1].__data__.isOper){
     nodeG.append("svg:text")
