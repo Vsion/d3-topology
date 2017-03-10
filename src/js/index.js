@@ -75,7 +75,7 @@ Topology.prototype.resize=function(){
 }
 
 Topology.prototype.doZoom=function(self, dom){
-  if(d3.event.scale > 2){
+  if(d3.event.scale > self.opt.scale){
     return;
   }
   var str = $(dom).attr("transform").match(/^translate\([^\)]+\)/)[0];
