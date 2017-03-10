@@ -17,7 +17,7 @@ function Topology(opt){
   opt.childNodes.forEach(function(cn){
     self.childNodesIds.push(cn.id);
   })
-  self.force = d3.layout.force().gravity(.05).distance(self.distance).charge(-800).size([w, h]);
+  self.force = d3.layout.force().gravity(.05).distance(self.distance).charge(-1000).size([w, h]);
   self.nodes = self.force.nodes();
   self.links = self.force.links();
   self.clickFn=function(node){ opt.nodeClickFn.call(self, node) };
