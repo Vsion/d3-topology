@@ -74,13 +74,30 @@ Topology.prototype.resize=function(){
     this.update();
 }
 
-Topology.prototype.doZoom=function(){
-  var str = $(this).attr("transform");
+Topology.prototype.doZoom=function(self, dom){
+  if(d3.event.scale > 2){
+    return;
+  }
+  var str = $(dom).attr("transform").match(/^translate\([^\)]+\)/)[0];
   arrTransl = str.replace("translate(", "").replace(")", "").split(",");
   var diff = d3.event.translate;
-  var x = parseFloat(arrTransl[0]) + diff[0];
-  var y = parseFloat(arrTransl[1]) + diff[1];
-  $(this).parent().find("g").find("image").attr("transform", "scale(" + d3.event.scale + "," + d3.event.scale + ")");
+  // var x = parseFloat(arrTransl[0]) + diff[0];
+  // var y = parseFloat(arrTransl[1]) + diff[1];
+  var g = $(dom).parent().find("g");
+
+  //.attr("transform", str + " scale(" + d3.event.scale + "," + d3.event.scale + ")")
+  g.find("image")
+  .attr("transform", "scale(" + d3.event.scale + "," + d3.event.scale + ")");
+  g.find("text")
+  .attr("transform", "scale(" + d3.event.scale + "," + d3.event.scale + ")");
+  self.force.linkDistance(function(l, i){
+    if(!!l.isOperLink){
+      return 40;
+    }else{
+      return 200 * d3.event.scale;
+    }
+  });
+  self.force.start();
 }
 
 //增加节点
@@ -286,7 +303,9 @@ Topology.prototype.update=function(){
   var self=this;
   var zoom = d3.behavior.zoom()
             .scaleExtent([1,10])//用于设置最小和最大的缩放比例
-            .on("zoom",self.doZoom);
+            .on("zoom",function(){
+              self.doZoom(self, this);
+            });
 
   var node = self.vis.selectAll("g.node")
       .data(self.nodes, function(d) { return d.id;});

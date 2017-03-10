@@ -57,7 +57,7 @@ body{
   stroke-width: 2;
   stroke: steelblue;
   fill: none;
-  stroke-dasharray:900,900;
+  stroke-dasharray:350;
   stroke-dashoffset:900;
   -webkit-animation: 'draw' 2.5s linear infinite;
   animation: 'draw' 2.5s linear infinite;
@@ -66,10 +66,10 @@ body{
 
 @-webkit-keyframes draw {
     from {
-        stroke-dashoffset: 900;
+        stroke-dashoffset: 350;
     }
     to {
-        stroke-dashoffset: 600;
+        stroke-dashoffset: 0;
     }
 }
 .c_right,
