@@ -7,6 +7,7 @@ function Topology(opt){
     container.innerHTML = content;
     self.container = container.querySelector(".topology");
   };
+  debugger
   var container = self.container,
     w=container.clientWidth,
     h=container.clientHeight;
@@ -14,9 +15,9 @@ function Topology(opt){
   self.opt = opt;
   self.currNode = null;
   self.childNodesIds = [];
-  opt.childNodes.forEach(function(cn){
+  !!opt.childNodes && opt.childNodes.forEach(function(cn){
     self.childNodesIds.push(cn.id);
-  })
+  });
   self.force = d3.layout.force().gravity(.05).distance(self.distance).charge(-1000).size([w, h]);
   self.nodes = self.force.nodes();
   self.links = self.force.links();
@@ -35,13 +36,32 @@ function Topology(opt){
       .attr("y2", function(d) { return d.target.y; });
   });
   self.setDefaultNodes();
+  self.setLinks();
   (function(_this, _opt){
     _this.addNodes(_opt.nodes);
     _this.addLinks(_opt.links);
     _this.update();
+    $(window).resize(function(){
+      $(_this.container).find("svg").attr("width",_this.container.clientWidth);
+      $(_this.container).find("svg").attr("height",_this.container.clientHeight);
+    })
   })(self, opt);
 }
-
+Topology.prototype.setLinks = function(){
+  var links = self.opt.links;
+  var tempLinks = JSON.parse(JSON.stringify(links));
+  var temp = [];
+  tempLinks.forEach(function(o, i){
+    var t = ([o.source, o.target].sort().join("")).toLowerCase();
+    if(temp.indexOf(t) < 0){
+      links.unshift({
+          source:o.source, target: o.target, className: 'backLink'
+      })
+      temp.push(t);
+    }
+  });
+  // return links;
+}
 Topology.prototype.setDefaultNodes = function(){
   var nodes = this.opt.nodes;
   var childNodes = this.opt.childNodes;
@@ -286,7 +306,7 @@ Topology.prototype.addOperNode = function(d){
         if(o == "childNodes"){
           nodes.push({id: d.id + "_" + o, name: '子节点', isOper: true});
         }
-        links.push({source: d.id, target: d.id + '_' + o,className: '', isOperLink: true})
+        links.push({source: d.id, target: d.id + '_' + o, className: 'operLinks', isOperLink: true})
       })
       self.addNodes(nodes);
       self.addLinks(links);
@@ -315,6 +335,7 @@ Topology.prototype.update=function(){
       .attr("class", "node")
       .call(self.force.drag)
       .call(zoom);
+
   //操作节点
   if(!!nodeEnter[0][nodeEnter[0].length - 1] && nodeEnter[0][nodeEnter[0].length - 1].__data__.isOper){
     nodeG.append("svg:text")
@@ -355,6 +376,23 @@ Topology.prototype.update=function(){
         .attr("dy", -35)
         .text(function(d) { return d.name });
   }
+
+  var defs = self.vis.append("defs");
+  var marker = defs.append("marker")
+                        .attr("id","marker")
+                        // .attr("markerUnits","strokeWidth")
+                        .attr("markerWidth","6")
+                        .attr("markerHeight","6")
+                        .attr("viewBox","0 0 10 10")
+                        .attr("refX","30")
+                        .attr("refY","5")
+                        // .attr("color", "#000")
+                        // .attr("fill","#000")
+                        .attr("orient","auto")
+                        .append("path")
+                        .attr("d","M 0 0 L 10 5 L 0 10 z")
+                        .attr("fill","#000");
+
   var link = self.vis.selectAll("line.link")
       .data(self.links, function(d) { return d.source.id + "-" + d.target.id; })
 
@@ -369,11 +407,18 @@ Topology.prototype.update=function(){
           }
           return className;
       })
-      .transition()
-      .duration(5000)
-      .styleTween("stroke-dashoffset", function() {
-            return d3.interpolateNumber(1000, 0);
-        });
+      // .transition()
+      // .duration(5000)
+      // .styleTween("stroke-dashoffset", function() {
+      //       return d3.interpolateNumber(1000, 0);
+      // })
+      .attr("marker-end", function(d){
+          if(d.isOperLink){
+            return ""
+          }else{
+            return "url(#marker)";
+          }
+      });
   self.force.linkDistance(function(l, i){
     if(!!l.isOperLink){
       return 40;
@@ -424,10 +469,15 @@ Topology.prototype.collapseNode = function (id){
 }
 
 Topology.prototype.showDetailDialog = function(d, callback){
-  this.removeOperNodes(d)
+  this.removeOperNodes(d);
+
+  var html = "<div>" + d.name + "</div>";
+  !!d.showDeatails && d.showDeatails.forEach(function(o){
+    html += "<div>" + o.name + ": " + o.value + "</div>"
+  })
   $.dialog.basicsDialog({//调用基本弹窗方法
       area: ['350', 'auto'],
-      content: d.name,
+      content: html,
       title: "提示",
       icon: "success",
       btn: [

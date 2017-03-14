@@ -17,44 +17,80 @@
     <div class="container">
     </div>
     <script>
+      var showDeatails = [
+              {name: "机房", value:"1"},
+              {name: "名称", value:"2"},
+              {name: "带宽", value:"3"},
+              {name: "当前流量", value:"4"},
+            ];
       var nodes=[
-        { id: '1', status: 0, imgUrl: './img/1.jpg', name: 'name:1'},
-        { id: '2', status: 1, imgUrl: './img/2.jpg', name: 'name:2'},
-        { id: '3_0', status: 0, imgUrl: './img/3.jpg', name: 'name:3_0'},
-        { id: '3_1', status: 1, imgUrl: './img/3.jpg', name: 'name:3_1'},
-        { id: '3_2', status: 0, imgUrl: './img/3.jpg', name: 'name:3_2'},
-        { id: '4', status: 1, imgUrl: './img/4.jpg', name: 'name:4'}
+        { id: '1', status: 1, imgUrl: './img/test.png', name: 'M', showDeatails: showDeatails},
+        { id: '2', status: 1, imgUrl: './img/test.png', name: 'N', showDeatails: showDeatails},
+        { id: '3', status: 1, imgUrl: './img/test.png', name: 'P', showDeatails: showDeatails},
+        { id: '4', status: 1, imgUrl: './img/test.png', name: 'Q', showDeatails: showDeatails},
+        { id: '5', status: 1, imgUrl: './img/test.png', name: 'S', showDeatails: showDeatails},
+        { id: '6', status: 1, imgUrl: './img/test.png', name: 'R', showDeatails: showDeatails},
+        { id: '7', status: 1, imgUrl: './img/test.png', name: 'T', showDeatails: showDeatails},
       ];
 
-      var childNodes=[
-        { id:'2-0', expand: true, status:1, imgUrl: './img/1.jpg', name: 'name2-0'},
-        { id:'2-1', status:1, imgUrl: './img/1.jpg', name: 'name2-1'},
-        { id:'2-0-1', status:1, imgUrl: './img/1.jpg', name: 'name2-0-1'},
-        { id:'3_0-0', status:1, imgUrl: './img/1.jpg', name: 'name3_0-0'},
-      ];
+      // var childNodes=[
+      //   { id:'2-0', expand: true, status:1, imgUrl: './img/test.png', name: 'name2-0'},
+      //   { id:'2-1', status:1, imgUrl: './img/test.png', name: 'name2-1'},
+      //   { id:'2-0-1', status:1, imgUrl: './img/test.png', name: 'name2-0-1'},
+      //   { id:'3_0-0', status:1, imgUrl: './img/test.png', name: 'name3_0-0'},
+      // ];
 
       var links=[
-        { source:'1', target:'2', className: 'testLineClass'},
-        { source:'3_0', target:'4'},
-        { source:'3_1', target:'4'},
-        { source:'3_2', target:'4'},
-        { source:'2', target:'4'},
-        { source:'1', target:'3_0'}
+        { source:'1', target:'2'},
+        { source:'2', target:'1', className: "link_error"},
+
+        { source:'1', target:'3'},
+        { source:'3', target:'1', className: "link_error"},
+
+        { source:'1', target:'4'},
+        { source:'4', target:'1', className: "link_error"},
+
+        { source:'2', target:'6'},
+        { source:'6', target:'2', className: "link_error"},
+
+        { source:'2', target:'5'},
+        { source:'5', target:'2', className: "link_error"},
+
+        { source:'3', target:'6'},
+        { source:'6', target:'3', className: "link_error"},
+
+        { source:'3', target:'5'},
+        { source:'5', target:'3', className: "link_error"},
+
+        { source:'4', target:'6'},
+        { source:'6', target:'4', className: "link_error"},
+
+        { source:'4', target:'5'},
+        { source:'5', target:'4', className: "link_error"},
+
+        { source:'5', target:'6'},
+        { source:'6', target:'5', className: "link_error"},
+
+        { source:'5', target:'7'},
+        { source:'7', target:'5', className: "link_error"},
+
+        { source:'6', target:'7'},
+        { source:'7', target:'6', className: "link_error"},
       ];
 
-      var childLinks=[
-        { source:'2',target:'2-0'},
-        { source:'2',target:'2-1'},
-        { source:'3_0',target:'3_0-0'},
-        { source:'2-0',target:'2-0-1'},
-      ]
+      // var childLinks=[
+      //   { source:'2',target:'2-0'},
+      //   { source:'2',target:'2-1'},
+      //   { source:'3_0',target:'3_0-0'},
+      //   { source:'2-0',target:'2-0-1'},
+      // ]
 
       var opt = {
         dom: '.container',
         nodes: nodes,
-        childNodes: childNodes,
+        childNodes: [],
         links: links,
-        childLinks: childLinks,
+        childLinks: [],
         nodeClickFn: function(node){
           console.log(node);
         },

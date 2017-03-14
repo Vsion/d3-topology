@@ -6,7 +6,7 @@
 html, body{
   height: 100%;
   width: 100%;
-  min-height: 1000px;
+  /*min-height: 1000px;*/
 }
 
 body{
@@ -47,30 +47,46 @@ body{
 }
 
 .operLineClass{
-  stroke: yellow;
+  stroke: green !important;
   animation: none !important;
+  -webkit-animation: none !important;
+  stroke-dasharray: 1000 !important;
 }
 .childLineClass{
   stroke: black;
+}
+
+.backLink{
+  stroke: #ddd !important;
+  animation: none !important;
+  -webkit-animation: none !important;
+  stroke-dasharray:1000 !important;
+}
+.operLinks{
+  animation: none !important;
+  stroke-dasharray:400 !important;
 }
 .link {
   stroke-width: 2;
   stroke: steelblue;
   fill: none;
-  stroke-dasharray:400;
+  stroke-dasharray:40;
   stroke-dashoffset:400;
-  -webkit-animation: 'draw' 2.5s linear infinite;
-  animation: 'draw' 2.5s linear infinite;
+  -webkit-animation: 'draw' 10s linear infinite;
+  animation: 'draw' 10s linear infinite;
   stroke-linejoin:bevel;
 }
 
 @-webkit-keyframes draw {
-    from {
+    0% {
         stroke-dashoffset: 400;
     }
-    to {
+    100% {
         stroke-dashoffset: 0;
     }
+    /*100% {
+        stroke-dashoffset: 400;
+    }*/
 }
 .c_right,
 .c_left{
