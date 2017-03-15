@@ -34,7 +34,8 @@ function Topology(opt){
   !!opt.childNodes && opt.childNodes.forEach(function(cn){
     self.childNodesIds.push(cn.id);
   });
-  self.force = d3.layout.force().gravity(.05).distance(self.distance).charge(-1000).size([w, h]);
+  self.force = d3.layout.force().gravity(0.05).distance(self.distance).charge(-1000).size([w, h]);
+
   self.nodes = self.force.nodes();
   self.links = self.force.links();
   // self.clickFn=function(node){ opt.nodeClickFn.call(self, node) };
@@ -410,7 +411,9 @@ Topology.prototype.update=function(){
         self.toggleQtip(self.getQtipHtml(d.showDeatails), true, d.y, d.x)
       })
       .on('mouseout', function(d) {
-        self.toggleQtip("", false)
+        setTimeout(function(){
+          self.toggleQtip("", false)
+        }, 500)
       });
 
     nodeG.append("svg:text")
@@ -433,7 +436,7 @@ Topology.prototype.update=function(){
                         // .attr("fill","#000")
                         .attr("orient","auto")
                         .append("path")
-                        .attr("d","M 0 2 L 10 5 L 0 8 z")
+                        .attr("d", "M 0 2 L 10 5 L 0 8 z")
                         .attr("fill","rgba(11, 11, 11, 0.5)");
 
   var link = self.vis.selectAll("line.link")
