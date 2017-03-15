@@ -1,9 +1,9 @@
 # d3-topology
 base on d3 2.10.3
 
-//节点属性集合
-var showDeatails = [
-  {
+-//节点属性集合
+-var showDeatails = [
+-  {
     name: "name",  //属性名称
     value: "value" //属性值
   },
