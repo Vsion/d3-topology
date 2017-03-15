@@ -1,18 +1,34 @@
 function Topology(opt){
+  if(!!!opt.dom){
+    console.error("must have a container");
+    return false;
+  }
   var self=this;
-  var content = '<div class="c_drag c_top"></div><div class="c_drag c_top_right"></div><div class="c_drag c_right"></div><div class="c_drag c_bottom_right"></div><div class="c_drag c_bottom"></div><div class="c_drag c_bottom_left"></div><div class="c_drag c_left"></div><div class="c_drag c_top_left"></div>'
-    + '<div id="getMoreDiv"><span>查看详细</span></div><div class="topology"></div>';
+  var content = //'<div class="c_drag c_top"></div><div class="c_drag c_top_right"></div><div class="c_drag c_right"></div><div class="c_drag c_bottom_right"></div><div class="c_drag c_bottom"></div><div class="c_drag c_bottom_left"></div><div class="c_drag c_left"></div><div class="c_drag c_top_left"></div>' +
+  '<div id="getMoreDiv"><span>查看详细</span></div><div class="topology"></div>';
+
   if(typeof(opt.dom)=='string'){
     var container = document.querySelector(opt.dom);
     container.innerHTML = content;
     self.container = container.querySelector(".topology");
   };
-  debugger
   var container = self.container,
     w=container.clientWidth,
     h=container.clientHeight;
   self.distance = 200;
-  self.opt = opt;
+  self.opt = $.extend({},{
+    nodes: [],
+    childNodes: [],
+    links: [],
+    childLinks: [],
+    scale: 1,
+    isQtip: false
+  },opt);
+  if(!!!self.opt.dom){
+    console.error("must have a container");
+    return false;
+  }
+  self.isQtip = opt.isQtip || false;
   self.currNode = null;
   self.childNodesIds = [];
   !!opt.childNodes && opt.childNodes.forEach(function(cn){
@@ -21,7 +37,7 @@ function Topology(opt){
   self.force = d3.layout.force().gravity(.05).distance(self.distance).charge(-1000).size([w, h]);
   self.nodes = self.force.nodes();
   self.links = self.force.links();
-  self.clickFn=function(node){ opt.nodeClickFn.call(self, node) };
+  // self.clickFn=function(node){ opt.nodeClickFn.call(self, node) };
   self.vis = d3.select(container).append("svg:svg")
          .attr("width", w).attr("height", h).attr("pointer-events", "all");
 
@@ -55,12 +71,11 @@ Topology.prototype.setLinks = function(){
     var t = ([o.source, o.target].sort().join("")).toLowerCase();
     if(temp.indexOf(t) < 0){
       links.unshift({
-          source:o.source, target: o.target, className: 'backLink'
+          source:o.source, target: o.target, className: 'backLink', showDeatails: [], linkWidth: o.linkWidth
       })
       temp.push(t);
     }
   });
-  // return links;
 }
 Topology.prototype.setDefaultNodes = function(){
   var nodes = this.opt.nodes;
@@ -136,8 +151,8 @@ Topology.prototype.addNodes=function(nodes){
 }
 
 //增加连线
-Topology.prototype.addLink=function(source, target, className, isOperLink){
-  this.links.push({source:this.findNode(source), target:this.findNode(target), className: className, isOperLink: isOperLink || false});
+Topology.prototype.addLink=function(source, target, className, isOperLink, lDeatails, width){
+  this.links.push({source:this.findNode(source), target:this.findNode(target), className: className, isOperLink: isOperLink || false, showDeatails: lDeatails, linkWidth: width});
 }
 
 //增加多个连线
@@ -147,7 +162,7 @@ Topology.prototype.addLinks=function(links){
     links.forEach(function(link){
       var className = "";
       if(!!link.className){className = link.className; }
-      self.addLink(link['source'],link['target'], className, link.isOperLink || false);
+      self.addLink(link['source'],link['target'], className, link.isOperLink || false, link.showDeatails, link.linkWidth);
     });
   }
 }
@@ -336,39 +351,67 @@ Topology.prototype.update=function(){
       .call(self.force.drag)
       .call(zoom);
 
-  //操作节点
-  if(!!nodeEnter[0][nodeEnter[0].length - 1] && nodeEnter[0][nodeEnter[0].length - 1].__data__.isOper){
-    nodeG.append("svg:text")
-        .attr("class", "nodetext")
-        .attr("dx", -25)
-        .attr("dy", 0)
-        .attr("style", "background:red; display:block; cursor: pointer; font-size: 15px")
-        .text(function(d) { return d.name })
-        .on("click", function(d){
-          if(d.name == "查看详细"){
-            self.showDetailDialog(self.getParentNode(d));
+  if(!self.isQtip){
+    //操作节点
+    if(!!nodeEnter[0][nodeEnter[0].length - 1] && nodeEnter[0][nodeEnter[0].length - 1].__data__.isOper){
+      nodeG.append("svg:text")
+          .attr("class", "nodetext")
+          .attr("dx", -25)
+          .attr("dy", 0)
+          .attr("style", "background:red; display:block; cursor: pointer; font-size: 15px")
+          .text(function(d) { return d.name })
+          .on("click", function(d){
+            if(d.name == "查看详细"){
+              self.showDetailDialog(self.getParentNode(d));
+            }
+            if(d.name == "子节点"){
+              self.getChildrenNodes(self.getParentNode(d));
+            }
+          });
+    }else{
+      //增加图片，可以根据需要来修改
+      nodeG.append("svg:image")
+          .attr("class", "circle")
+          .attr("xlink:href", function(d){
+              //根据类型来使用图片
+              return d.imgUrl;
+            })
+          .attr("x", "-32px")
+          .attr("y", "-32px")
+          .attr("width", "64px")
+          .attr("height", "64px")
+          .on('click',function(d){
+            console.log(d);
+            self.addOperNode(d);
+          })
 
-          }
-          if(d.name == "子节点"){
-            self.getChildrenNodes(self.getParentNode(d));
-          }
-        });
+      nodeG.append("svg:text")
+          .attr("class", "nodetext")
+          .attr("dx", 15)
+          .attr("dy", -35)
+          .text(function(d) { return d.name });
+    }
   }else{
     //增加图片，可以根据需要来修改
     nodeG.append("svg:image")
-        .attr("class", "circle")
-        .attr("xlink:href", function(d){
-            //根据类型来使用图片
-            return d.imgUrl;
-          })
-        .attr("x", "-32px")
-        .attr("y", "-32px")
-        .attr("width", "64px")
-        .attr("height", "64px")
-        .on('click',function(d){
-          console.log(d);
-          self.addOperNode(d);
+      .attr("class", "circle")
+      .attr("xlink:href", function(d){
+          //根据类型来使用图片
+          return d.imgUrl;
         })
+      .attr("x", "-32px")
+      .attr("y", "-32px")
+      .attr("width", "64px")
+      .attr("height", "64px")
+      // .on('load',function(d){
+      //   self.bindQtip(self.getQtipHtml(d.showDeatails), this, "hightest_zIndex");
+      // })
+      .on('mouseover', function(d) {
+        self.toggleQtip(self.getQtipHtml(d.showDeatails), true, d.y, d.x)
+      })
+      .on('mouseout', function(d) {
+        self.toggleQtip("", false)
+      });
 
     nodeG.append("svg:text")
         .attr("class", "nodetext")
@@ -384,40 +427,51 @@ Topology.prototype.update=function(){
                         .attr("markerWidth","6")
                         .attr("markerHeight","6")
                         .attr("viewBox","0 0 10 10")
-                        .attr("refX","30")
+                        .attr("refX","20")
                         .attr("refY","5")
                         // .attr("color", "#000")
                         // .attr("fill","#000")
                         .attr("orient","auto")
                         .append("path")
-                        .attr("d","M 0 0 L 10 5 L 0 10 z")
-                        .attr("fill","#000");
+                        .attr("d","M 0 2 L 10 5 L 0 8 z")
+                        .attr("fill","rgba(11, 11, 11, 0.5)");
 
   var link = self.vis.selectAll("line.link")
       .data(self.links, function(d) { return d.source.id + "-" + d.target.id; })
 
   link.enter()
       .insert("svg:line", "g.node")
-      .attr("class", function(d){
+      .attr("class", function(l){
+          if(!!l.linkWidth){
+            this.style.strokeWidth = l.linkWidth.toString();
+          }
           var className = "";
-          if(d.isOperLink){
+          if(l.isOperLink){
             className = "link operLineClass";
           }else{
-            className = d["className"] ? 'link ' + d["className"] : d['source']['status'] && d['target']['status'] ? 'link' :'link link_error'
+            className = l["className"] ? 'link ' + l["className"] : l['source']['status'] && l['target']['status'] ? 'link' :'link'// link_error'
           }
           return className;
       })
-      // .transition()
-      // .duration(5000)
-      // .styleTween("stroke-dashoffset", function() {
-      //       return d3.interpolateNumber(1000, 0);
-      // })
-      .attr("marker-end", function(d){
-          if(d.isOperLink){
+      .attr("marker-end", function(l){
+          if(l.isOperLink || l.className == "backLink"){
             return ""
           }else{
             return "url(#marker)";
           }
+      })
+      .on("mouseover", function(l){
+        // if(l.isOperLink || l.className == "backLink")return;
+        var sy = l.source.y;
+        var sx = l.source.x;
+        var ty = l.target.y;
+        var tx = l.target.x;
+
+        self.toggleQtip(self.getQtipHtml(l.showDeatails), true, (sy+ty)/2, (sx+tx)/2)
+      })
+      .on('mouseout', function(l) {
+        // if(l.isOperLink || l.className == "backLink")return;
+        self.toggleQtip("", false)
       });
   self.force.linkDistance(function(l, i){
     if(!!l.isOperLink){
@@ -429,6 +483,14 @@ Topology.prototype.update=function(){
   node.exit().remove();
   link.exit().remove();
   self.force.start();
+}
+Topology.prototype.getQtipHtml = function(details){
+  var _html = "";
+  details.length > 0 && details.forEach(function(o, i){
+    _html += "<li><span class='icon-circle' style='color:#e54957;margin-right:5px;'></span>" + o.name + ": " + o.value + "</li>";
+
+  });
+  return _html;
 }
 
 Topology.prototype.getParentNode = function(d){
@@ -491,4 +553,41 @@ Topology.prototype.showDetailDialog = function(d, callback){
         }
       ]
   })
+}
+
+Topology.prototype.bindQtip = function(content,target,posOpt,style){
+    var $target = $(target),
+        _pos={};
+    if(typeof(posOpt) == "string"){
+        style =  posOpt;
+        _pos = {my:"left center",at:"right center",adjust: { target: $(document), resize: true,method:"flipinvert"  },target:$target||"event", viewport: $(window)};
+    }else{
+        _pos = $.extend({},{my:"left center",at:"right center",adjust: { target: $(document), resize: true,method:"flipinvert"  },target:$target||"event", viewport: $(window)},posOpt||{});
+    }
+    $target.qtip({
+        overwrite: true,
+        content : content,
+        position: _pos,
+        hide: {fixed: true,delay: 300},
+        style: style || ""
+    });
+}
+Topology.prototype.toggleQtip = function(content, isShow, top, left){
+  var self = this;
+  if(!isShow || !!!content){
+    !!$(self.container).find("#qtip") && $(self.container).find("#qtip").remove();
+  }
+  else{
+    var html = "";
+    html += '<div id="qtip" class="qtip qtip-default hightest_zIndex qtip-pos-lc qtip-fixed" tracking="false" role="alert" aria-live="polite" aria-atomic="false" aria-describedby="qtip-3-content" aria-hidden="true" data-qtip-id="3"';
+
+    html += ' style="z-index: 25000004;';
+    html += 'display: block;opacity: 1;top: ' + top + 'px;left: ' + left + 'px;';
+    html += '"><div class="qtip-tip" style="border: 0px !important; width: 8px; height: 8px; line-height: 8px; top: 50%; margin-top: -4px; left: -8px; background-color: transparent !important;"><canvas width="8" height="8" style="border: 0px !important; width: 8px; height: 8px; background-color: transparent !important;"></canvas></div><div class="qtip-content" id="qtip-3-content" aria-atomic="true"><div class="qtip-list-content">'
+    html += '<ul style="list-style:none;padding-left:0;" class="qtip-list-ul">'
+    html += content;
+    html += '</ul></div></div></div>';
+
+    $(self.container).append(html);
+  }
 }

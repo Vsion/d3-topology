@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <title>d3测试页面</title>
     <link rel="stylesheet" href="src/css/index.css">
-    <!-- <script src="js/d3.js"></script> -->
-    <!-- <script src="js/d3.js"></script> -->
+    <link rel="stylesheet" href="src/css/qtip/qtip.css">
     <script src="src/js/jquery.min.js"></script>
     <script src="src/js/d3.v2.js"></script>
     <script src="src/js/dialog/dialog.js"></script>
@@ -24,13 +23,13 @@
               {name: "当前流量", value:"4"},
             ];
       var nodes=[
-        { id: '1', status: 1, imgUrl: './img/test.png', name: 'M', showDeatails: showDeatails},
-        { id: '2', status: 1, imgUrl: './img/test.png', name: 'N', showDeatails: showDeatails},
-        { id: '3', status: 1, imgUrl: './img/test.png', name: 'P', showDeatails: showDeatails},
-        { id: '4', status: 1, imgUrl: './img/test.png', name: 'Q', showDeatails: showDeatails},
-        { id: '5', status: 1, imgUrl: './img/test.png', name: 'S', showDeatails: showDeatails},
-        { id: '6', status: 1, imgUrl: './img/test.png', name: 'R', showDeatails: showDeatails},
-        { id: '7', status: 1, imgUrl: './img/test.png', name: 'T', showDeatails: showDeatails},
+        { id: '1', status: 1, imgUrl: './img/test.png', name: 'M', showDeatails: showDeatails.concat({name: "name", value: "M"})},
+        { id: '2', status: 1, imgUrl: './img/test.png', name: 'N', showDeatails: showDeatails.concat({name: "name", value: "N"})},
+        { id: '3', status: 1, imgUrl: './img/test.png', name: 'P', showDeatails: showDeatails.concat({name: "name", value: "P"})},
+        { id: '4', status: 1, imgUrl: './img/test.png', name: 'Q', showDeatails: showDeatails.concat({name: "name", value: "Q"})},
+        { id: '5', status: 1, imgUrl: './img/test.png', name: 'S', showDeatails: showDeatails.concat({name: "name", value: "S"})},
+        { id: '6', status: 1, imgUrl: './img/test.png', name: 'R', showDeatails: showDeatails.concat({name: "name", value: "R"})},
+        { id: '7', status: 1, imgUrl: './img/test.png', name: 'T', showDeatails: showDeatails.concat({name: "name", value: "T"})},
       ];
 
       // var childNodes=[
@@ -41,41 +40,41 @@
       // ];
 
       var links=[
-        { source:'1', target:'2'},
-        { source:'2', target:'1', className: "link_error"},
+        { source:'1', target:'2', showDeatails: showDeatails, linkWidth: 5},
+        { source:'2', target:'1', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error", linkWidth: 5},
 
-        { source:'1', target:'3'},
-        { source:'3', target:'1', className: "link_error"},
+        { source:'1', target:'3', showDeatails: showDeatails},
+        { source:'3', target:'1', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'1', target:'4'},
-        { source:'4', target:'1', className: "link_error"},
+        { source:'1', target:'4', showDeatails: showDeatails},
+        { source:'4', target:'1', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'2', target:'6'},
-        { source:'6', target:'2', className: "link_error"},
+        { source:'2', target:'6', showDeatails: showDeatails},
+        { source:'6', target:'2', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'2', target:'5'},
-        { source:'5', target:'2', className: "link_error"},
+        { source:'2', target:'5', showDeatails: showDeatails},
+        { source:'5', target:'2', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'3', target:'6'},
-        { source:'6', target:'3', className: "link_error"},
+        { source:'3', target:'6', showDeatails: showDeatails},
+        { source:'6', target:'3', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'3', target:'5'},
-        { source:'5', target:'3', className: "link_error"},
+        { source:'3', target:'5', showDeatails: showDeatails},
+        { source:'5', target:'3', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'4', target:'6'},
-        { source:'6', target:'4', className: "link_error"},
+        { source:'4', target:'6', showDeatails: showDeatails},
+        { source:'6', target:'4', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'4', target:'5'},
-        { source:'5', target:'4', className: "link_error"},
+        { source:'4', target:'5', showDeatails: showDeatails},
+        { source:'5', target:'4', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'5', target:'6'},
-        { source:'6', target:'5', className: "link_error"},
+        { source:'5', target:'6', showDeatails: showDeatails},
+        { source:'6', target:'5', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'5', target:'7'},
-        { source:'7', target:'5', className: "link_error"},
+        { source:'5', target:'7', showDeatails: showDeatails},
+        { source:'7', target:'5', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
 
-        { source:'6', target:'7'},
-        { source:'7', target:'6', className: "link_error"},
+        { source:'6', target:'7', showDeatails: showDeatails},
+        { source:'7', target:'6', showDeatails: showDeatails.concat({name: "方向", value: "上行"}), className: "link_error"},
       ];
 
       // var childLinks=[
@@ -88,13 +87,12 @@
       var opt = {
         dom: '.container',
         nodes: nodes,
-        childNodes: [],
         links: links,
-        childLinks: [],
-        nodeClickFn: function(node){
-          console.log(node);
-        },
+        // nodeClickFn: function(node){
+        //   console.log(node);
+        // },
         scale: 2,
+        isQtip: true
       }
       var topology=new Topology(opt);
     </script>

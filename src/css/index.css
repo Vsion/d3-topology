@@ -67,7 +67,7 @@ body{
   stroke-dasharray:400 !important;
 }
 .link {
-  stroke-width: 2;
+  stroke-width: 3;
   stroke: steelblue;
   fill: none;
   stroke-dasharray:40;
